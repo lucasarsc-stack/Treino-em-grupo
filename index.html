@@ -9,11 +9,47 @@
   body {
     margin: 0;
     font-family: 'Segoe UI', Arial, sans-serif;
-    background: #111;
+    background: #0d0714;
     color: #fff;
     transition: background .3s, color .3s;
     padding-bottom: 60px;
   }
+
+  .home-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 20%, rgba(162,89,255,.25), transparent 60%), #0d0714;
+  }
+  .home-title {
+    font-size: 30px;
+    letter-spacing: 1px;
+    margin: 0 0 40px;
+    color: #a259ff;
+    text-shadow: 0 0 18px rgba(162,89,255,.6);
+  }
+  .home-names {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .home-btn {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(162,89,255,.5);
+    background: rgba(162,89,255,.12);
+    color: #fff;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .home-btn:active { background: rgba(162,89,255,.3); }
   .tabs {
     display: flex;
     position: sticky;
@@ -109,11 +145,17 @@
   .theme-lucas .exercise.done { color: #ffe600; }
 
   .theme-nathan { }
-  .theme-nathan .tabs .tab.active { border-color: #a259ff; color: #a259ff; }
-  .theme-nathan .btn.primary { background: #a259ff; color: #fff; }
-  .theme-nathan .badge { background: #a259ff; color: #fff; }
-  .theme-nathan .exercise.done { color: #cba3ff; }
-  .theme-nathan .card { background: rgba(162,89,255,.08); border-color: rgba(162,89,255,.3); }
+  .theme-nathan .tabs .tab.active,
+  .tabs .tab.active { border-color: #a259ff; color: #a259ff; }
+  .theme-nathan .btn.primary,
+  .btn.primary { background: #a259ff; color: #fff; }
+  .theme-nathan .badge,
+  .badge { background: #a259ff; color: #fff; }
+  .theme-nathan .exercise.done,
+  .exercise.done { color: #cba3ff; }
+  .theme-nathan .card,
+  .card { background: rgba(162,89,255,.08); border-color: rgba(162,89,255,.3); }
+  .water-bar-fill { background: #a259ff; }
 
   .theme-angelica .tabs .tab.active { border-color: #ff4fa3; color: #ff4fa3; }
   .theme-angelica .btn.primary { background: #ff4fa3; color: #fff; }
@@ -147,7 +189,16 @@
 </head>
 <body>
 
-<div class="tabs" id="tabs">
+<div id="home" class="home-screen">
+  <h1 class="home-title">TREINO DOS CAMPEÕES</h1>
+  <div class="home-names">
+    <button class="home-btn" data-person="lucas">Lucas Cruz</button>
+    <button class="home-btn" data-person="angelica">Angelica</button>
+    <button class="home-btn" data-person="nathan">Nathan</button>
+  </div>
+</div>
+
+<div class="tabs" id="tabs" style="display:none;">
   <div class="tab" data-person="lucas">Lucas Cruz</div>
   <div class="tab" data-person="angelica">Angelica</div>
   <div class="tab" data-person="nathan">Nathan</div>
@@ -232,6 +283,7 @@ function render() {
   const nomes = { lucas:'Lucas Cruz', angelica:'Angelica', nathan:'Nathan' };
 
   const letraSelectorHtml = `
+    <h2>Ficha de hoje</h2>
     <div class="sub">Fichas restantes neste ciclo — toque para escolher</div>
     <div class="card" style="display:flex; flex-wrap:wrap; gap:8px;">
       ${order.map(l => {
@@ -240,31 +292,9 @@ function render() {
       }).join('')}
     </div>`;
 
-  if (!st.letra || st.done.includes(st.letra)) {
-    app.innerHTML = `
-    <div class="container active">
-      <h1>${nomes[p]}</h1>
-      ${letraSelectorHtml}
-    </div>`;
-    document.querySelectorAll('[data-letra]').forEach(b=>{
-      b.addEventListener('click', ()=>{ st.letra = b.dataset.letra; st.checks = []; saveState(p); render(); });
-    });
-    return;
-  }
-
-  const letra = st.letra;
-  const ficha = FICHAS[p].dias[letra];
-
-  const totalEx = ficha.ex.length;
-  const marcados = st.checks.filter(Boolean).length;
-  const completo = marcados === totalEx;
-
-  app.innerHTML = `
-  <div class="container active">
-    <h1>${nomes[p]}</h1>
-    ${letraSelectorHtml}
-    <div class="sub">${ficha.dia} — FICHA ${letra} · ${ficha.titulo}</div>
-
+  // Bloco fixo: aparece sempre que a pessoa é selecionada, independente da ficha
+  const dadosFixosHtml = `
+    <h2>Seus dados</h2>
     <div class="card">
       <div class="grid2">
         <div class="field"><label>Peso (kg)</label><input type="number" id="in-weight" value="${st.weight}"></div>
@@ -290,7 +320,33 @@ function render() {
         <button class="btn secondary" data-add="500">+500ml</button>
         <button class="btn secondary" data-add="-200">-200ml</button>
       </div>
-    </div>
+    </div>`;
+
+  // Caso não haja ficha escolhida (ou já concluída): mostra dados fixos + seletor de ficha, sem lista de exercícios
+  if (!st.letra || st.done.includes(st.letra)) {
+    app.innerHTML = `
+    <div class="container active">
+      <h1>${nomes[p]}</h1>
+      ${dadosFixosHtml}
+      ${letraSelectorHtml}
+    </div>`;
+    bindCommon(p, st);
+    return;
+  }
+
+  const letra = st.letra;
+  const ficha = FICHAS[p].dias[letra];
+
+  const totalEx = ficha.ex.length;
+  const marcados = st.checks.filter(Boolean).length;
+  const completo = marcados === totalEx;
+
+  app.innerHTML = `
+  <div class="container active">
+    <h1>${nomes[p]}</h1>
+    ${dadosFixosHtml}
+    ${letraSelectorHtml}
+    <div class="sub">${ficha.dia} — FICHA ${letra} · ${ficha.titulo}</div>
 
     <h2>Ficha ${letra} — ${ficha.titulo}</h2>
     <div class="card">
@@ -315,27 +371,12 @@ function render() {
     </div>
   </div>`;
 
-  document.querySelectorAll('[data-letra]').forEach(b=>{
-    b.addEventListener('click', ()=>{ st.letra = b.dataset.letra; st.checks = []; saveState(p); render(); });
-  });
+  bindCommon(p, st);
+
   document.querySelectorAll('.exercise input[type=checkbox]').forEach(cb=>{
     cb.addEventListener('change', e=>{
       const idx = +e.target.dataset.idx;
       st.checks[idx] = e.target.checked;
-      saveState(p);
-      render();
-    });
-  });
-  document.getElementById('in-weight').addEventListener('input', e=>{ st.weight=e.target.value; saveState(p); updateKcalPreview(); });
-  document.getElementById('in-height').addEventListener('input', e=>{ st.height=e.target.value; saveState(p); });
-  document.getElementById('in-measure').addEventListener('input', e=>{ st.measure=e.target.value; saveState(p); });
-  document.getElementById('in-goal').addEventListener('input', e=>{ st.goal=e.target.value; saveState(p); });
-  document.getElementById('in-hours').addEventListener('input', e=>{ st.hours=e.target.value; saveState(p); updateKcalPreview(); });
-  document.getElementById('in-water-goal').addEventListener('input', e=>{ st.water.goal = parseInt(e.target.value)||1; saveState(p); render(); });
-  document.querySelectorAll('.water-buttons [data-add]').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      st.water.current = Math.max(0, st.water.current + parseInt(b.dataset.add));
-      st.water.date = new Date().toISOString().slice(0,10);
       saveState(p);
       render();
     });
@@ -360,6 +401,27 @@ function render() {
   });
 }
 
+// Liga os eventos que existem em toda tela (seletor de ficha + dados fixos + água)
+function bindCommon(p, st) {
+  document.querySelectorAll('[data-letra]').forEach(b=>{
+    b.addEventListener('click', ()=>{ st.letra = b.dataset.letra; st.checks = []; saveState(p); render(); });
+  });
+  document.getElementById('in-weight').addEventListener('input', e=>{ st.weight=e.target.value; saveState(p); updateKcalPreview(); });
+  document.getElementById('in-height').addEventListener('input', e=>{ st.height=e.target.value; saveState(p); });
+  document.getElementById('in-measure').addEventListener('input', e=>{ st.measure=e.target.value; saveState(p); });
+  document.getElementById('in-goal').addEventListener('input', e=>{ st.goal=e.target.value; saveState(p); });
+  document.getElementById('in-hours').addEventListener('input', e=>{ st.hours=e.target.value; saveState(p); updateKcalPreview(); });
+  document.getElementById('in-water-goal').addEventListener('input', e=>{ st.water.goal = parseInt(e.target.value)||1; saveState(p); render(); });
+  document.querySelectorAll('.water-buttons [data-add]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      st.water.current = Math.max(0, st.water.current + parseInt(b.dataset.add));
+      st.water.date = new Date().toISOString().slice(0,10);
+      saveState(p);
+      render();
+    });
+  });
+}
+
 function calcKcal(weight, hours) {
   const w = parseFloat(weight); const h = parseFloat(hours);
   if (!w || !h) return 0;
@@ -373,6 +435,8 @@ function updateKcalPreview() {
 
 async function selectPerson(p) {
   current = p;
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('tabs').style.display = 'flex';
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.person===p));
   document.body.className = 'theme-' + p;
   if (!state[p]) state[p] = await loadState(p);
@@ -382,10 +446,12 @@ async function selectPerson(p) {
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click', ()=> selectPerson(t.dataset.person));
 });
+document.querySelectorAll('.home-btn').forEach(b=>{
+  b.addEventListener('click', ()=> selectPerson(b.dataset.person));
+});
 
 (async ()=>{
   for (const p of PEOPLE) state[p] = await loadState(p);
-  selectPerson('lucas');
 })();
 </script>
 </body>

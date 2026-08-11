@@ -5,563 +5,388 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fichas de Treino</title>
 <style>
-  :root{
-    --bg:#0a0a0a;
-    --bg2:#141014;
-    --purple:#b366ff;
-    --purple-dim:#7a3fc9;
-    --purple-glow:#c98cff;
-    --card:#161217;
-    --border:#3a1f57;
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    transition: background .3s, color .3s;
+    padding-bottom: 60px;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:radial-gradient(circle at top, #170b22 0%, #0a0a0a 60%);
-    color:var(--purple);
-    font-family:'Segoe UI', Arial, sans-serif;
-    padding-bottom:60px;
+  .tabs {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #000;
   }
-  h1,h2,h3{color:var(--purple-glow); text-shadow:0 0 8px rgba(179,102,255,0.5);}
-  header{
-    text-align:center;
-    padding:20px 10px 10px;
+  .tab {
+    flex: 1;
+    padding: 16px 8px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+    opacity: .6;
   }
-  header h1{margin:0; font-size:1.6em; letter-spacing:1px;}
-  header p{color:#8a6aa8; font-size:0.85em;}
+  .tab.active { opacity: 1; }
+  .container { max-width: 640px; margin: 0 auto; padding: 20px; display: none; }
+  .container.active { display: block; }
 
-  .tabs{
-    display:flex;
-    justify-content:center;
-    gap:8px;
-    flex-wrap:wrap;
-    margin:15px 10px;
-  }
-  .tab-btn{
-    background:var(--bg2);
-    border:1px solid var(--border);
-    color:var(--purple);
-    padding:10px 20px;
-    border-radius:20px;
-    cursor:pointer;
-    font-weight:bold;
-    transition:0.2s;
-  }
-  .tab-btn.active{
-    background:var(--purple);
-    color:#0a0a0a;
-    box-shadow:0 0 12px var(--purple);
-  }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 24px 0 10px; }
+  .sub { opacity: .75; font-size: 13px; margin-bottom: 18px; }
 
-  .person-panel{display:none; max-width:600px; margin:0 auto; padding:0 12px;}
-  .person-panel.active{display:block;}
+  .card {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 13px; margin-bottom: 5px; opacity: .85; }
+  .field input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    font-size: 14px;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-  .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:16px;
-    margin-bottom:16px;
-    box-shadow:0 0 15px rgba(122,63,201,0.15);
+  .exercise {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 4px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    font-size: 14px;
   }
-  .card h2{margin-top:0; font-size:1.15em;}
-  .card h3{margin:10px 0 6px; font-size:1em; color:var(--purple-glow); border-bottom:1px solid var(--border); padding-bottom:4px;}
+  .exercise:last-child { border-bottom: none; }
+  .exercise input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; }
+  .exercise .name { flex: 1; }
+  .exercise .sets { opacity: .7; font-size: 13px; white-space: nowrap; }
+  .exercise.done .name { text-decoration: line-through; opacity: .5; }
 
-  label{display:block; margin:8px 0 4px; font-size:0.9em; color:#d3b8f0;}
-  input[type=number]{
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    background:#0d0910;
-    color:var(--purple-glow);
-    font-size:1em;
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 8px;
   }
-  input[type=number]:focus{outline:none; border-color:var(--purple); box-shadow:0 0 6px var(--purple);}
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
 
-  .row2{display:flex; gap:10px;}
-  .row2 > div{flex:1;}
-
-  ul.exlist{list-style:none; padding-left:0; margin:6px 0;}
-  ul.exlist li{
-    padding:6px 8px;
-    border-left:3px solid var(--purple-dim);
-    margin-bottom:4px;
-    background:#100b16;
-    border-radius:4px;
-    font-size:0.92em;
-    color:#e3d2fa;
+  .print-area {
+    border: 2px dashed rgba(255,255,255,.4);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+    text-align: center;
   }
-
-  .workout-block{
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:10px;
-    margin-bottom:12px;
-    background:#0f0a14;
-  }
-  .workout-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:6px;
-  }
-  .workout-header label.chk{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-size:0.85em;
-    color:#c9a6f0;
-    margin:0;
-  }
-  input[type=checkbox]{
-    width:18px; height:18px;
-    accent-color:var(--purple);
+  .print-area .row { font-size: 15px; margin: 8px 0; }
+  .print-area .row b { font-size: 17px; }
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
   }
 
-  button{
-    background:linear-gradient(135deg, var(--purple), var(--purple-dim));
-    color:#0a0a0a;
-    border:none;
-    padding:12px;
-    width:100%;
-    border-radius:10px;
-    font-weight:bold;
-    font-size:1em;
-    cursor:pointer;
-    margin-top:8px;
-    box-shadow:0 0 10px rgba(179,102,255,0.4);
-    transition:0.2s;
-  }
-  button:hover{box-shadow:0 0 18px rgba(179,102,255,0.8);}
+  /* THEMES */
+  .theme-lucas .tabs .tab.active { border-color: #ffe600; color: #ffe600; }
+  .theme-lucas .btn.primary { background: #ffe600; color: #000; }
+  .theme-lucas .badge { background: #ffe600; color: #000; }
+  .theme-lucas .exercise.done { color: #ffe600; }
 
-  .result{
-    background:#0d0910;
-    border:1px solid var(--purple-dim);
-    border-radius:10px;
-    padding:10px;
-    margin-top:8px;
-    font-size:0.9em;
-  }
-  .result span{color:var(--purple-glow); font-weight:bold;}
+  .theme-nathan { }
+  .theme-nathan .tabs .tab.active { border-color: #a259ff; color: #a259ff; }
+  .theme-nathan .btn.primary { background: #a259ff; color: #fff; }
+  .theme-nathan .badge { background: #a259ff; color: #fff; }
+  .theme-nathan .exercise.done { color: #cba3ff; }
+  .theme-nathan .card { background: rgba(162,89,255,.08); border-color: rgba(162,89,255,.3); }
 
-  .water-box{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-top:8px;
-  }
-  .water-fill{
-    flex:1;
-    height:14px;
-    background:#1a0f24;
-    border-radius:8px;
-    overflow:hidden;
-    border:1px solid var(--border);
-  }
-  .water-fill-inner{
-    height:100%;
-    background:linear-gradient(90deg, #5e2f99, var(--purple-glow));
-    width:0%;
-    transition:width 0.4s;
-  }
+  .theme-angelica .tabs .tab.active { border-color: #ff4fa3; color: #ff4fa3; }
+  .theme-angelica .btn.primary { background: #ff4fa3; color: #fff; }
+  .theme-angelica .badge { background: #ff4fa3; color: #fff; }
+  .theme-angelica .exercise.done { color: #ff9ecb; }
+  .theme-angelica .card { background: rgba(255,79,163,.08); border-color: rgba(255,79,163,.3); }
 
-  .summary-card{
-    border:2px solid var(--purple);
-    border-radius:16px;
-    padding:20px;
-    background:linear-gradient(160deg, #150a1e, #050205);
-    box-shadow:0 0 25px rgba(179,102,255,0.5);
-    text-align:center;
+  .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,.3); color: #fff; }
+
+  .water-bar-bg {
+    width: 100%;
+    height: 14px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.12);
+    overflow: hidden;
+    margin: 10px 0;
   }
-  .summary-card h2{font-size:1.3em; margin-top:0;}
-  .summary-name{
-    font-size:1.6em;
-    font-weight:900;
-    color:var(--purple-glow);
-    text-shadow:0 0 10px var(--purple);
-    margin-bottom:10px;
+  .water-bar-fill {
+    height: 100%;
+    background: #3aa0ff;
+    border-radius: 8px;
+    transition: width .3s;
   }
-  .summary-line{
-    display:flex;
-    justify-content:space-between;
-    padding:8px 4px;
-    border-bottom:1px dashed var(--border);
-    font-size:0.95em;
-  }
-  .summary-line:last-child{border-bottom:none;}
-  .summary-line b{color:var(--purple-glow);}
-  .badge{
-    display:inline-block;
-    margin-top:10px;
-    padding:8px 18px;
-    border-radius:20px;
-    background:var(--purple);
-    color:#0a0a0a;
-    font-weight:bold;
-  }
-  .checklist-mini{
-    display:flex;
-    justify-content:center;
-    gap:14px;
-    margin:12px 0;
-    flex-wrap:wrap;
-  }
-  .checklist-mini div{
-    background:#100b16;
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:6px 10px;
-    font-size:0.85em;
-  }
-  .checklist-mini div.done{
-    border-color:var(--purple);
-    color:var(--purple-glow);
-    box-shadow:0 0 8px rgba(179,102,255,0.5);
-  }
-  footer{
-    text-align:center;
-    color:#5e4a72;
-    font-size:0.75em;
-    margin-top:30px;
-  }
-  small.hint{color:#7a6690; display:block; margin-top:4px;}
+  .theme-lucas .water-bar-fill { background: #ffe600; }
+  .theme-nathan .water-bar-fill { background: #a259ff; }
+  .theme-angelica .water-bar-fill { background: #ff4fa3; }
+  .water-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 4px; }
+  .water-buttons { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .water-buttons .btn { flex: 1; min-width: 70px; margin-top: 0; padding: 10px 4px; font-size: 13px; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>💪 FICHAS DE TREINO</h1>
-  <p>Preencha seus dados, marque o treino do dia e calcule suas kcal</p>
-</header>
+<div class="tabs" id="tabs">
+  <div class="tab" data-person="lucas">Lucas Cruz</div>
+  <div class="tab" data-person="angelica">Angelica</div>
+  <div class="tab" data-person="nathan">Nathan</div>
+</div>
 
-<div class="tabs" id="tabs"></div>
-<div id="panels"></div>
-
-<footer>Feito para Angelica, Nathan e Lucas 🔮</footer>
+<div id="app"></div>
 
 <script>
-const DATA = {
-  Angelica: {
-    color:"A",
-    metas:{},
-    treinos:[
-      {id:"A", nome:"Segunda: Push (Peito, Ombros e Tríceps)", ex:[
-        "Supino Reto: 3x8-10",
-        "Supino Inclinado (Halteres): 3x10",
-        "Desenvolvimento Ombros: 3x10",
-        "Elevação Lateral: 4x15",
-        "Tríceps Polia + Corda: 3x12"
-      ]},
-      {id:"B", nome:"Terça: Pull (Costas, Bíceps e Posterior de Ombro)", ex:[
-        "Puxada Alta: 3x10",
-        "Remada Baixa: 3x10",
-        "Crucifixo Inverso: 3x12",
-        "Rosca Direta: 3x10",
-        "Rosca Martelo: 3x10"
-      ]},
-      {id:"C", nome:"Quarta: Legs (Foco Glúteo e Posterior)", ex:[
-        "Elevação Pélvica: 4x10-12 (Pesado)",
-        "Stiff: 3x10",
-        "Cadeira Flexora: 3x12",
-        "Cadeira Abdutora: 4x15",
-        "Panturrilhas em pé: 4x15"
-      ]},
-      {id:"D", nome:"Sexta: Push/Pull (Peito e Costas juntos)", ex:[
-        "Supino Inclinado: 3x10",
-        "Remada Curvada: 3x10",
-        "Peck Deck (Peito): 3x12",
-        "Puxada Triângulo: 3x12",
-        "Elevação Lateral: 4x15"
-      ]},
-      {id:"E", nome:"Sábado: Legs (Foco Quadríceps)", ex:[
-        "Agachamento (Livre ou Hack): 3x8-10",
-        "Leg Press 45°: 3x10-12",
-        "Cadeira Extensora: 3x12 (pausa no topo)",
-        "Afundo/Passada: 3x10 cada perna",
-        "Panturrilhas sentado: 4x15"
-      ]}
-    ]
+const FICHAS = {
+  nathan: {
+    order: ['A','B','C','D','E'],
+    dias: {
+      A: { titulo: 'PEITO + TRÍCEPS', dia: 'SEGUNDA', ex: [
+        ['Supino máquina','4x8–12'],['Supino inclinado máquina','3x8–12'],['Peck deck','3x10–15'],
+        ['Crossover','3x10–15'],['Tríceps pulley','3x8–12'],['Tríceps máquina','3x10–15']]},
+      B: { titulo: 'COSTAS + BÍCEPS', dia: 'TERÇA', ex: [
+        ['Puxada frontal','4x8–12'],['Remada máquina','4x8–12'],['Remada baixa','3x10–12'],
+        ['Pulldown','3x10–15'],['Rosca Scott máquina','3x8–12'],['Rosca polia','3x10–15']]},
+      C: { titulo: 'PERNAS', dia: 'QUARTA', ex: [
+        ['Leg press','4x8–12'],['Hack squat','4x8–12'],['Cadeira extensora','3x10–15'],
+        ['Cadeira flexora','4x10–15'],['Glúteo máquina','3x10–15'],['Panturrilha','4x12–20']]},
+      D: { titulo: 'OMBROS + BRAÇOS', dia: 'QUINTA', ex: [
+        ['Desenvolvimento máquina','4x8–12'],['Elevação lateral máquina','4x10–15'],['Crucifixo inverso','3x12–15'],
+        ['Rosca Scott','3x8–12'],['Rosca polia','3x10–15'],['Tríceps pulley','3x8–12'],['Tríceps corda','3x10–15']]},
+      E: { titulo: 'FULL UPPER', dia: 'SEXTA', ex: [
+        ['Supino máquina','3x8–12'],['Puxada frontal','3x8–12'],['Remada máquina','3x10–12'],
+        ['Supino inclinado','3x10–12'],['Elevação lateral','3x12–15'],['Rosca máquina/polia','3x10–12'],['Tríceps corda','3x10–12']]}
+    }
   },
-  Nathan: { color:"N", treinos: null },
-  Lucas: { color:"L", treinos: null }
+  padrao: {
+    order: ['A','B','C','D','E','F'],
+    dias: {
+      A: { titulo: 'PEITO + TRÍCEPS', dia: 'SEGUNDA', ex: [
+        ['Supino máquina','4x8–12'],['Supino inclinado máquina','3x8–12'],['Crucifixo máquina','3x10–15'],
+        ['Crossover na polia','3x10–15'],['Tríceps pulley','3x8–12'],['Tríceps máquina','3x10–12'],['Tríceps corda','3x12–15']]},
+      B: { titulo: 'COSTAS + BÍCEPS', dia: 'TERÇA', ex: [
+        ['Puxada frontal','4x8–12'],['Remada articulada/máquina','4x8–12'],['Remada baixa','3x10–12'],
+        ['Pulldown máquina','3x10–15'],['Rosca Scott máquina','3x8–12'],['Rosca na polia','3x10–12'],['Rosca martelo na polia','3x10–15']]},
+      C: { titulo: 'PERNAS', dia: 'QUARTA', ex: [
+        ['Leg press 45°','4x8–12'],['Agachamento no Smith','4x8–12'],['Cadeira extensora','3x10–15'],
+        ['Cadeira flexora','3x10–15'],['Hack squat','3x8–12'],['Panturrilha no leg press','4x12–15'],['Abdutora','3x12–20']]},
+      D: { titulo: 'OMBROS + PEITO', dia: 'QUINTA', ex: [
+        ['Desenvolvimento máquina','4x8–12'],['Elevação lateral máquina','4x10–15'],['Crucifixo inverso máquina','3x12–15'],
+        ['Supino inclinado máquina','3x8–12'],['Peck deck','3x10–15'],['Elevação lateral na polia','3x12–15']]},
+      E: { titulo: 'COSTAS + BRAÇOS', dia: 'SEXTA', ex: [
+        ['Puxada articulada','4x8–12'],['Remada máquina','4x8–12'],['Pullover máquina','3x10–15'],
+        ['Rosca Scott máquina','3x8–12'],['Rosca polia','3x10–15'],['Tríceps máquina','3x8–12'],['Tríceps corda','3x10–15']]},
+      F: { titulo: 'PERNAS', dia: 'SÁBADO', ex: [
+        ['Hack squat','4x8–12'],['Leg press','4x10–12'],['Cadeira extensora','3x12–15'],
+        ['Mesa/cadeira flexora','4x10–15'],['Glúteo máquina','3x10–15'],['Abdutora','3x15–20'],['Panturrilha máquina','4x12–20']]}
+    }
+  }
 };
+FICHAS.lucas = FICHAS.padrao;
+FICHAS.angelica = FICHAS.padrao;
 
-const LUCAS_NATHAN_TREINOS = [
-  {id:"A", nome:"Segunda: Superior A (Peito, Costas e Ombros)", ex:[
-    "Supino Reto (barra ou halteres): 3x8-10",
-    "Puxada Alta na Polia: 3x8-10",
-    "Supino Inclinado (halteres): 3x10-12",
-    "Remada Baixa (cabo/articulada): 3x10-12",
-    "Elevação Lateral: 4x12-15",
-    "Rosca Direta + Tríceps na Polia (superserie): 3x10-12"
-  ]},
-  {id:"B", nome:"Terça: Inferior A (Foco Quadríceps)", ex:[
-    "Leg Press 45°: 3x8-10",
-    "Agachamento (Livre, Smith ou Hack): 3x8-10",
-    "Cadeira Extensora: 3x10-12",
-    "Afundo ou Passada: 3x10 por perna",
-    "Panturrilhas em pé: 4x15"
-  ]},
-  {id:"C", nome:"Quarta: Costas, Peito e Braços", ex:[
-    "Remada Curvada ou Serrote (halter): 3x8-10",
-    "Supino Articulado ou Flexão com carga: 3x8-10",
-    "Remada Alta ou Crucifixo Inverso: 3x10-12",
-    "Desenvolvimento para Ombros (halteres): 3x10",
-    "Elevação Lateral: 4x12-15",
-    "Rosca Martelo + Tríceps Francês: 3x10-12"
-  ]},
-  {id:"D", nome:"Sexta: Inferior B (Posteriores e Glúteos)", ex:[
-    "Stiff ou Levantamento Terra Romeno: 3x8-10",
-    "Cadeira Flexora ou Mesa Flexora: 3x10-12",
-    "Elevação Pélvica: 3x10",
-    "Cadeira Extensora (leve, final): 3x12",
-    "Panturrilhas sentado: 4x12-15"
-  ]},
-  {id:"S", nome:"Sábado: Repetir um treino acima", ex:[
-    "Escolha um dos treinos A, B, C ou D e repita",
-    "Domingo: Descanso Total 🛌"
-  ]}
-];
-DATA.Nathan.treinos = LUCAS_NATHAN_TREINOS;
-DATA.Lucas.treinos = LUCAS_NATHAN_TREINOS;
+const PEOPLE = ['lucas','angelica','nathan'];
+let current = 'lucas';
+let state = {}; // per person: {done, letra, weight, height, measure, goal, checks:[], water}
 
-const MET = 6;
+async function loadState(p) {
+  try {
+    const r = await window.storage.get('ficha_estado_' + p, true);
+    const st = r ? JSON.parse(r.value) : { done: [], letra: null, weight:'', height:'', measure:'', goal:'', checks:[] };
+    if (!st.done) st.done = [];
+    if (st.letra === undefined) st.letra = null;
+    if (!st.water) st.water = { goal: 2000, current: 0, date: '' };
+    const today = new Date().toISOString().slice(0,10);
+    if (st.water.date !== today) { st.water.current = 0; st.water.date = today; }
+    return st;
+  } catch(e) { return { done: [], letra: null, weight:'', height:'', measure:'', goal:'', checks:[], water:{goal:2000,current:0,date:new Date().toISOString().slice(0,10)} }; }
+}
+async function saveState(p) {
+  try { await window.storage.set('ficha_estado_' + p, JSON.stringify(state[p]), true); } catch(e) {}
+}
 
-const tabsEl = document.getElementById('tabs');
-const panelsEl = document.getElementById('panels');
-const names = Object.keys(DATA);
+function render() {
+  const app = document.getElementById('app');
+  const p = current;
+  const st = state[p];
+  const order = FICHAS[p].order;
+  const nomes = { lucas:'Lucas Cruz', angelica:'Angelica', nathan:'Nathan' };
 
-names.forEach((name, i) => {
-  const btn = document.createElement('button');
-  btn.className = 'tab-btn' + (i===0 ? ' active' : '');
-  btn.textContent = name;
-  btn.onclick = () => selectTab(name);
-  btn.id = 'tabbtn-'+name;
-  tabsEl.appendChild(btn);
+  const letraSelectorHtml = `
+    <div class="sub">Fichas restantes neste ciclo — toque para escolher</div>
+    <div class="card" style="display:flex; flex-wrap:wrap; gap:8px;">
+      ${order.map(l => {
+        const feita = st.done.includes(l);
+        return `<button class="btn ${feita?'secondary':'primary'}" data-letra="${l}" style="flex:1; min-width:60px; margin-top:0; ${feita?'opacity:.35; text-decoration:line-through;':''}" ${feita?'disabled':''}>${l}</button>`;
+      }).join('')}
+    </div>`;
 
-  const panel = document.createElement('div');
-  panel.className = 'person-panel' + (i===0 ? ' active' : '');
-  panel.id = 'panel-'+name;
-  panel.innerHTML = buildPanel(name);
-  panelsEl.appendChild(panel);
+  if (!st.letra || st.done.includes(st.letra)) {
+    app.innerHTML = `
+    <div class="container active">
+      <h1>${nomes[p]}</h1>
+      ${letraSelectorHtml}
+    </div>`;
+    document.querySelectorAll('[data-letra]').forEach(b=>{
+      b.addEventListener('click', ()=>{ st.letra = b.dataset.letra; st.checks = []; saveState(p); render(); });
+    });
+    return;
+  }
+
+  const letra = st.letra;
+  const ficha = FICHAS[p].dias[letra];
+
+  const totalEx = ficha.ex.length;
+  const marcados = st.checks.filter(Boolean).length;
+  const completo = marcados === totalEx;
+
+  app.innerHTML = `
+  <div class="container active">
+    <h1>${nomes[p]}</h1>
+    ${letraSelectorHtml}
+    <div class="sub">${ficha.dia} — FICHA ${letra} · ${ficha.titulo}</div>
+
+    <div class="card">
+      <div class="grid2">
+        <div class="field"><label>Peso (kg)</label><input type="number" id="in-weight" value="${st.weight}"></div>
+        <div class="field"><label>Altura (cm)</label><input type="number" id="in-height" value="${st.height}"></div>
+        <div class="field"><label>Medida (cintura, cm)</label><input type="number" id="in-measure" value="${st.measure}"></div>
+        <div class="field"><label>Objetivo de peso (kg)</label><input type="number" id="in-goal" value="${st.goal}"></div>
+      </div>
+      <div class="field"><label>Horas treinadas hoje</label><input type="number" step="0.1" id="in-hours" value="${st.hours||''}"></div>
+      <div class="row" style="font-size:14px; opacity:.85;">Calorias estimadas: <b id="kcal-preview">${calcKcal(st.weight, st.hours)}</b> kcal</div>
+    </div>
+
+    <h2>Água</h2>
+    <div class="card">
+      <div class="water-row">
+        <span>Meta diária:</span>
+        <input type="number" id="in-water-goal" value="${st.water.goal}" style="width:90px; padding:6px; border-radius:6px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff;"> ml
+      </div>
+      <div class="water-row"><b>${st.water.current} ml</b><span>${Math.min(100, Math.round(st.water.current/st.water.goal*100)||0)}%</span></div>
+      <div class="water-bar-bg"><div class="water-bar-fill" style="width:${Math.min(100, st.water.current/st.water.goal*100||0)}%;"></div></div>
+      <div class="water-buttons">
+        <button class="btn secondary" data-add="200">+200ml</button>
+        <button class="btn secondary" data-add="300">+300ml</button>
+        <button class="btn secondary" data-add="500">+500ml</button>
+        <button class="btn secondary" data-add="-200">-200ml</button>
+      </div>
+    </div>
+
+    <h2>Ficha ${letra} — ${ficha.titulo}</h2>
+    <div class="card">
+      ${ficha.ex.map((e,i)=>`
+        <div class="exercise ${st.checks[i]?'done':''}">
+          <input type="checkbox" data-idx="${i}" ${st.checks[i]?'checked':''}>
+          <div class="name">${i+1}. ${e[0]}</div>
+          <div class="sets">${e[1]}</div>
+        </div>`).join('')}
+    </div>
+
+    <button class="btn primary" id="btn-concluir" ${!completo?'disabled':''}>
+      ${completo ? 'Concluir treino e gerar resumo' : `Marque todos os exercícios (${marcados}/${totalEx})`}
+    </button>
+
+    <div class="print-area" id="print-area" style="display:none;">
+      <span class="badge">TREINO CONCLUÍDO</span>
+      <div class="row">Tempo total treino: <b id="p-tempo"></b></div>
+      <div class="row">Calorias gastas: <b id="p-kcal"></b></div>
+      <div class="row">Ficha escolhida: <b id="p-ficha"></b></div>
+      <div class="row">Água consumida: <b id="p-water"></b></div>
+    </div>
+  </div>`;
+
+  document.querySelectorAll('[data-letra]').forEach(b=>{
+    b.addEventListener('click', ()=>{ st.letra = b.dataset.letra; st.checks = []; saveState(p); render(); });
+  });
+  document.querySelectorAll('.exercise input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', e=>{
+      const idx = +e.target.dataset.idx;
+      st.checks[idx] = e.target.checked;
+      saveState(p);
+      render();
+    });
+  });
+  document.getElementById('in-weight').addEventListener('input', e=>{ st.weight=e.target.value; saveState(p); updateKcalPreview(); });
+  document.getElementById('in-height').addEventListener('input', e=>{ st.height=e.target.value; saveState(p); });
+  document.getElementById('in-measure').addEventListener('input', e=>{ st.measure=e.target.value; saveState(p); });
+  document.getElementById('in-goal').addEventListener('input', e=>{ st.goal=e.target.value; saveState(p); });
+  document.getElementById('in-hours').addEventListener('input', e=>{ st.hours=e.target.value; saveState(p); updateKcalPreview(); });
+  document.getElementById('in-water-goal').addEventListener('input', e=>{ st.water.goal = parseInt(e.target.value)||1; saveState(p); render(); });
+  document.querySelectorAll('.water-buttons [data-add]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      st.water.current = Math.max(0, st.water.current + parseInt(b.dataset.add));
+      st.water.date = new Date().toISOString().slice(0,10);
+      saveState(p);
+      render();
+    });
+  });
+
+  document.getElementById('btn-concluir').addEventListener('click', async ()=>{
+    const kcal = calcKcal(st.weight, st.hours);
+    const tempo = st.hours ? st.hours + 'h' : '-';
+    document.getElementById('p-tempo').textContent = tempo;
+    document.getElementById('p-kcal').textContent = kcal + ' kcal';
+    document.getElementById('p-ficha').textContent = 'Ficha ' + letra + ' — ' + ficha.titulo;
+    document.getElementById('p-water').textContent = st.water.current + ' / ' + st.water.goal + ' ml';
+    document.getElementById('print-area').style.display = 'block';
+    document.getElementById('print-area').scrollIntoView({behavior:'smooth'});
+
+    st.done.push(letra);
+    if (st.done.length >= FICHAS[p].order.length) st.done = [];
+    st.letra = null;
+    st.checks = [];
+    st.hours = '';
+    await saveState(p);
+  });
+}
+
+function calcKcal(weight, hours) {
+  const w = parseFloat(weight); const h = parseFloat(hours);
+  if (!w || !h) return 0;
+  return Math.round(6 * w * h); // MET ~6 para musculação
+}
+function updateKcalPreview() {
+  const st = state[current];
+  const el = document.getElementById('kcal-preview');
+  if (el) el.textContent = calcKcal(st.weight, st.hours);
+}
+
+async function selectPerson(p) {
+  current = p;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.person===p));
+  document.body.className = 'theme-' + p;
+  if (!state[p]) state[p] = await loadState(p);
+  render();
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=> selectPerson(t.dataset.person));
 });
 
-function selectTab(name){
-  names.forEach(n=>{
-    document.getElementById('tabbtn-'+n).classList.toggle('active', n===name);
-    document.getElementById('panel-'+n).classList.toggle('active', n===name);
-  });
-}
-
-function buildPanel(name){
-  const treinos = DATA[name].treinos;
-  let workoutHtml = treinos.map(t => `
-    <div class="workout-block">
-      <div class="workout-header">
-        <h3 style="margin:0;">Treino ${t.id} — ${t.nome}</h3>
-        <label class="chk">
-          <input type="checkbox" id="chk-${name}-${t.id}" onchange="saveState('${name}')">
-          feito hoje
-        </label>
-      </div>
-      <ul class="exlist">
-        ${t.ex.map(e=>`<li>${e}</li>`).join('')}
-      </ul>
-    </div>
-  `).join('');
-
-  return `
-    <div class="card">
-      <h2>📋 Dados de ${name}</h2>
-      <div class="row2">
-        <div>
-          <label>Altura (cm)</label>
-          <input type="number" id="altura-${name}" placeholder="Ex: 170" oninput="saveState('${name}')">
-        </div>
-        <div>
-          <label>Peso atual (kg)</label>
-          <input type="number" id="peso-${name}" placeholder="Ex: 70" oninput="saveState('${name}')">
-        </div>
-      </div>
-      <label>Meta de peso (kg)</label>
-      <input type="number" id="meta-${name}" placeholder="Ex: 65" oninput="saveState('${name}')">
-
-      <label>Meta de água diária (litros)</label>
-      <input type="number" id="metaagua-${name}" placeholder="Ex: 3" step="0.1" oninput="saveState('${name}')">
-      <label>Água ingerida hoje (litros)</label>
-      <input type="number" id="agua-${name}" placeholder="Ex: 1.5" step="0.1" oninput="saveState('${name}')">
-      <div class="water-box">
-        <div class="water-fill"><div class="water-fill-inner" id="waterbar-${name}"></div></div>
-        <span id="waterpct-${name}">0%</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>🏋️ Fichas de Treino</h2>
-      ${workoutHtml}
-    </div>
-
-    <div class="card">
-      <h2>🔥 Calcular Kcal Gastos</h2>
-      <label>Qual treino você fez hoje?</label>
-      <select id="treinofeito-${name}" onchange="saveState('${name}')" style="width:100%;padding:10px;border-radius:8px;background:#0d0910;color:#c98cff;border:1px solid #3a1f57;">
-        ${treinos.map(t=>`<option value="${t.id}">Treino ${t.id}</option>`).join('')}
-      </select>
-      <label>Quantas horas você treinou hoje?</label>
-      <input type="number" id="horas-${name}" step="0.1" placeholder="Ex: 1.5" oninput="saveState('${name}')">
-      <button onclick="calcular('${name}')">Calcular kcal (IA)</button>
-      <div class="result" id="resultado-${name}" style="display:none;"></div>
-    </div>
-
-    <div class="summary-card" id="summary-${name}">
-      <h2>📸 Resumo para Print</h2>
-      <div class="summary-name">${name}</div>
-      <div class="summary-line"><span>Treino realizado:</span> <b id="sum-treino-${name}">-</b></div>
-      <div class="summary-line"><span>Total kcal gastos hoje:</span> <b id="sum-kcal-${name}">0 kcal</b></div>
-      <div class="summary-line"><span>Meta de peso atingida:</span> <b id="sum-meta-${name}">0%</b></div>
-      <div class="summary-line"><span>Meta de água hoje:</span> <b id="sum-agua-${name}">0%</b></div>
-      <div class="checklist-mini" id="sum-checklist-${name}"></div>
-      <div class="badge" id="sum-badge-${name}">Continue treinando 💜</div>
-    </div>
-  `;
-}
-
-function calcular(name){
-  const peso = parseFloat(document.getElementById(`peso-${name}`).value);
-  const horas = parseFloat(document.getElementById(`horas-${name}`).value);
-  const treinoId = document.getElementById(`treinofeito-${name}`).value;
-  const resDiv = document.getElementById(`resultado-${name}`);
-
-  if(!peso || !horas){
-    resDiv.style.display='block';
-    resDiv.innerHTML = '⚠️ Preencha peso e horas treinadas para calcular.';
-    return;
-  }
-
-  const kcal = Math.round(MET * peso * horas);
-
-  resDiv.style.display='block';
-  resDiv.innerHTML = `Treino <span>${treinoId}</span> — Você treinou <span>${horas}h</span> e gastou aproximadamente <span>${kcal} kcal</span> 🔥`;
-
-  document.getElementById(`sum-treino-${name}`).textContent = treinoId;
-  document.getElementById(`sum-kcal-${name}`).textContent = kcal + ' kcal';
-
-  updateMetaProgress(name);
-  saveState(name, {kcal, treinoId});
-}
-
-function updateMetaProgress(name){
-  const peso = parseFloat(document.getElementById(`peso-${name}`).value);
-  const meta = parseFloat(document.getElementById(`meta-${name}`).value);
-  const badge = document.getElementById(`sum-badge-${name}`);
-  const metaEl = document.getElementById(`sum-meta-${name}`);
-
-  if(!peso || !meta){
-    metaEl.textContent = '0%';
-    return;
-  }
-
-  let diff = Math.abs(peso - meta);
-  let pct;
-  if(diff === 0){
-    pct = 100;
-  } else {
-    pct = Math.max(0, Math.round(100 - (diff / peso) * 100));
-  }
-  pct = Math.min(pct, 100);
-  metaEl.textContent = pct + '%';
-
-  if(pct >= 100){
-    badge.textContent = '🎉 Meta 100% atingida!';
-  } else if(pct >= 70){
-    badge.textContent = '💜 Quase lá, continue!';
-  } else {
-    badge.textContent = '🔥 Continue treinando';
-  }
-}
-
-function updateWater(name){
-  const meta = parseFloat(document.getElementById(`metaagua-${name}`).value);
-  const atual = parseFloat(document.getElementById(`agua-${name}`).value);
-  const bar = document.getElementById(`waterbar-${name}`);
-  const pctEl = document.getElementById(`waterpct-${name}`);
-  const sumAgua = document.getElementById(`sum-agua-${name}`);
-
-  if(!meta || meta<=0){
-    bar.style.width='0%'; pctEl.textContent='0%'; sumAgua.textContent='0%';
-    return;
-  }
-  let pct = Math.round(((atual||0)/meta)*100);
-  pct = Math.min(pct,100);
-  bar.style.width = pct+'%';
-  pctEl.textContent = pct+'%';
-  sumAgua.textContent = pct+'%';
-}
-
-function updateChecklist(name){
-  const treinos = DATA[name].treinos;
-  const container = document.getElementById(`sum-checklist-${name}`);
-  container.innerHTML = treinos.map(t=>{
-    const chk = document.getElementById(`chk-${name}-${t.id}`);
-    const done = chk && chk.checked;
-    return `<div class="${done?'done':''}">${t.id} ${done?'✔':''}</div>`;
-  }).join('');
-}
-
-function saveState(name, extra){
-  updateWater(name);
-  updateMetaProgress(name);
-  updateChecklist(name);
-
-  const state = {
-    altura: document.getElementById(`altura-${name}`).value,
-    peso: document.getElementById(`peso-${name}`).value,
-    meta: document.getElementById(`meta-${name}`).value,
-    metaagua: document.getElementById(`metaagua-${name}`).value,
-    agua: document.getElementById(`agua-${name}`).value,
-    horas: document.getElementById(`horas-${name}`).value,
-    treinofeito: document.getElementById(`treinofeito-${name}`).value,
-  };
-  DATA[name].treinos.forEach(t=>{
-    const chk = document.getElementById(`chk-${name}-${t.id}`);
-    state['chk_'+t.id] = chk ? chk.checked : false;
-  });
-  if(extra){ state.lastKcal = extra.kcal; state.lastTreino = extra.treinoId; }
-
-  try{
-    localStorage.setItem('treino_'+name, JSON.stringify(state));
-  }catch(e){}
-}
-
-function loadState(name){
-  let raw;
-  try{ raw = localStorage.getItem('treino_'+name); }catch(e){ raw = null; }
-  if(!raw) return;
-  const state = JSON.parse(raw);
-  if(state.altura) document.getElementById(`altura-${name}`).value = state.altura;
-  if(state.peso) document.getElementById(`peso-${name}`).value = state.peso;
-  if(state.meta) document.getElementById(`meta-${name}`).value = state.meta;
-  if(state.metaagua) document.getElementById(`metaagua-${name}`).value = state.metaagua;
-  if(state.agua) document.getElementById(`agua-${name}`).value = state.agua;
-  if(state.horas) document.getElementById(`horas-${name}`).value = state.horas;
-  if(state.treinofeito) document.getElementById(`treinofeito-${name}`).value = state.treinofeito;
-  DATA[name].treinos.forEach(t=>{
-    const chk = document.getElementById(`chk-${name}-${t.id}`);
-    if(chk && state['chk_'+t.id]) chk.checked = true;
-  });
-  if(state.lastKcal){
-    document.getElementById(`sum-kcal-${name}`).textContent = state.lastKcal + ' kcal';
-    document.getElementById(`sum-treino-${name}`).textContent = state.lastTreino || '-';
-  }
-  updateWater(name);
-  updateMetaProgress(name);
-  updateChecklist(name);
-}
-
-names.forEach(loadState);
+(async ()=>{
+  for (const p of PEOPLE) state[p] = await loadState(p);
+  selectPerson('lucas');
+})();
 </script>
-
 </body>
 </html>

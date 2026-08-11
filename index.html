@@ -261,8 +261,8 @@ let state = {}; // per person: {done, letra, weight, height, measure, goal, chec
 
 async function loadState(p) {
   try {
-    const r = await window.storage.get('ficha_estado_' + p, true);
-    const st = r ? JSON.parse(r.value) : { done: [], letra: null, weight:'', height:'', measure:'', goal:'', checks:[] };
+    const raw = localStorage.getItem('ficha_estado_' + p);
+    const st = raw ? JSON.parse(raw) : { done: [], letra: null, weight:'', height:'', measure:'', goal:'', checks:[] };
     if (!st.done) st.done = [];
     if (st.letra === undefined) st.letra = null;
     if (!st.water) st.water = { goal: 2000, current: 0, date: '' };
@@ -272,7 +272,7 @@ async function loadState(p) {
   } catch(e) { return { done: [], letra: null, weight:'', height:'', measure:'', goal:'', checks:[], water:{goal:2000,current:0,date:new Date().toISOString().slice(0,10)} }; }
 }
 async function saveState(p) {
-  try { await window.storage.set('ficha_estado_' + p, JSON.stringify(state[p]), true); } catch(e) {}
+  try { localStorage.setItem('ficha_estado_' + p, JSON.stringify(state[p])); } catch(e) {}
 }
 
 function render() {

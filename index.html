@@ -110,33 +110,22 @@
   .metrics-box div { display: flex; justify-content: space-between; align-items: center; }
   .metrics-box b { font-size: 15px; }
 
-  /* ESTILOS DOS EXERCÍCIOS E VETORES EMBUTIDOS */
+  /* ESTILOS DOS EXERCÍCIOS */
   .exercise-item {
     border-bottom: 1px solid rgba(255,255,255,.1);
-    padding: 12px 4px;
+    padding: 14px 4px;
   }
   .exercise-item:last-child { border-bottom: none; }
   .exercise {
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 14px;
+    font-size: 15px;
   }
-  .exercise input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; cursor: pointer; }
+  .exercise input[type=checkbox] { width: 22px; height: 22px; flex-shrink: 0; cursor: pointer; }
   .exercise .name { flex: 1; font-weight: 600; }
-  .exercise .sets { opacity: .7; font-size: 13px; white-space: nowrap; }
+  .exercise .sets { opacity: .75; font-size: 14px; white-space: nowrap; }
   .exercise-item.done .name { text-decoration: line-through; opacity: .5; }
-
-  .exercise-img {
-    width: 100%;
-    height: 100px;
-    object-fit: contain;
-    background: rgba(255,255,255,.03);
-    border-radius: 8px;
-    margin-top: 10px;
-    display: block;
-    border: 1px solid rgba(255,255,255,.08);
-  }
 
   .btn {
     width: 100%;
@@ -254,43 +243,6 @@
 <div id="app"></div>
 
 <script>
-// IMAGENS VETORIAIS (SVG) GERADAS DIRETAMENTE NO CÓDIGO - IMPOSSÍVEL BLOQUEAR!
-function createMuscleSvg(label, color) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="100%" height="100%">
-    <rect width="300" height="100" rx="10" fill="#150d22"/>
-    <path d="M150 20 C140 35, 130 50, 150 80 C170 50, 160 35, 150 20 Z" fill="${color}" opacity="0.3"/>
-    <circle cx="150" cy="50" r="22" fill="${color}" opacity="0.8"/>
-    <text x="150" y="55" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">${label}</text>
-  </svg>`;
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-}
-
-const MUSCLE_IMAGES = {
-  peito: createMuscleSvg('PEITORAL', '#ff4d4d'),
-  triceps: createMuscleSvg('TRÍCEPS', '#ff944d'),
-  biceps: createMuscleSvg('BÍCEPS', '#ffd633'),
-  costas: createMuscleSvg('DORSAL / COSTAS', '#33cc33'),
-  ombros: createMuscleSvg('DELTÓIDES / OMBROS', '#3399ff'),
-  quadriceps: createMuscleSvg('QUADRÍCEPS', '#9933ff'),
-  posterior: createMuscleSvg('POSTERIOR DE COXA', '#ff33cc'),
-  panturrilha: createMuscleSvg('PANTURRILHA', '#00ffff'),
-  gluteo: createMuscleSvg('GLÚTEOS', '#ff6699')
-};
-
-function getMuscleImg(nomeEx) {
-  const ex = nomeEx.toLowerCase();
-  if (ex.includes('supino') || ex.includes('peck') || ex.includes('crossover') || ex.includes('crucifixo máquina')) return MUSCLE_IMAGES.peito;
-  if (ex.includes('tríceps') || ex.includes('triceps')) return MUSCLE_IMAGES.triceps;
-  if (ex.includes('rosca')) return MUSCLE_IMAGES.biceps;
-  if (ex.includes('puxada') || ex.includes('remada') || ex.includes('pulldown') || ex.includes('pullover')) return MUSCLE_IMAGES.costas;
-  if (ex.includes('desenvolvimento') || ex.includes('elevação') || ex.includes('crucifixo inverso')) return MUSCLE_IMAGES.ombros;
-  if (ex.includes('extensora') || ex.includes('leg press') || ex.includes('hack') || ex.includes('agachamento')) return MUSCLE_IMAGES.quadriceps;
-  if (ex.includes('flexora')) return MUSCLE_IMAGES.posterior;
-  if (ex.includes('panturrilha')) return MUSCLE_IMAGES.panturrilha;
-  if (ex.includes('glúteo') || ex.includes('gluteo') || ex.includes('abdutora')) return MUSCLE_IMAGES.gluteo;
-  return MUSCLE_IMAGES.peito;
-}
-
 const FICHAS = {
   nathan: {
     order: ['A','B','C','D','E'],
@@ -498,7 +450,6 @@ function render() {
       ${ficha.ex.map((e,i)=>{
         const nome = e[0];
         const series = e[1];
-        const imgUrl = getMuscleImg(nome);
         const isChecked = st.checks[i];
 
         return `
@@ -508,7 +459,6 @@ function render() {
             <div class="name">${i+1}. ${nome}</div>
             <div class="sets">${series}</div>
           </div>
-          <img class="exercise-img" src="${imgUrl}" alt="Músculo: ${nome}">
         </div>`;
       }).join('')}
     </div>

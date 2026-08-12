@@ -103,7 +103,7 @@
     font-size: 14px;
   }
   .exercise:last-child { border-bottom: none; }
-  .exercise input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; }
+  .exercise input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; cursor: pointer; }
   .exercise .name { flex: 1; }
   .exercise .sets { opacity: .7; font-size: 13px; white-space: nowrap; }
   .exercise.done .name { text-decoration: line-through; opacity: .5; }
@@ -144,7 +144,6 @@
   .theme-lucas .badge { background: #ffe600; color: #000; }
   .theme-lucas .exercise.done { color: #ffe600; }
 
-  .theme-nathan { }
   .theme-nathan .tabs .tab.active,
   .tabs .tab.active { border-color: #a259ff; color: #a259ff; }
   .theme-nathan .btn.primary,
@@ -155,7 +154,6 @@
   .exercise.done { color: #cba3ff; }
   .theme-nathan .card,
   .card { background: rgba(162,89,255,.08); border-color: rgba(162,89,255,.3); }
-  .water-bar-fill { background: #a259ff; }
 
   .theme-angelica .tabs .tab.active { border-color: #ff4fa3; color: #ff4fa3; }
   .theme-angelica .btn.primary { background: #ff4fa3; color: #fff; }
@@ -257,20 +255,24 @@ FICHAS.angelica = FICHAS.padrao;
 
 const PEOPLE = ['lucas','angelica','nathan'];
 let current = 'lucas';
-let state = {}; // per person: {done, letra, weight, height, measure, goal, checks:[], water}
+let state = {};
 
 async function loadState(p) {
   try {
     const raw = localStorage.getItem('ficha_estado_' + p);
-    const st = raw ? JSON.parse(raw) : { done: [], letra: null, weight:'', height:'', measure:'', goal:'', checks:[] };
+    const st = raw ? JSON.parse(raw) : { done: [], letra: null, weight:'', height:'', measure:'', goal:'', hours:'', checks:[] };
     if (!st.done) st.done = [];
     if (st.letra === undefined) st.letra = null;
+    if (st.hours === undefined) st.hours = '';
     if (!st.water) st.water = { goal: 2000, current: 0, date: '' };
     const today = new Date().toISOString().slice(0,10);
     if (st.water.date !== today) { st.water.current = 0; st.water.date = today; }
     return st;
-  } catch(e) { return { done: [], letra: null, weight:'', height:'', measure:'', goal:'', checks:[], water:{goal:2000,current:0,date:new Date().toISOString().slice(0,10)} }; }
+  } catch(e) { 
+    return { done: [], letra: null, weight:'', height:'', measure:'', goal:'', hours:'', checks:[], water:{goal:2000,current:0,date:new Date().toISOString().slice(0,10)} }; 
+  }
 }
+
 async function saveState(p) {
   try { localStorage.setItem('ficha_estado_' + p, JSON.stringify(state[p])); } catch(e) {}
 }
@@ -292,7 +294,6 @@ function render() {
       }).join('')}
     </div>`;
 
-  // Bloco fixo: aparece sempre que a pessoa é selecionada, independente da ficha
   const dadosFixosHtml = `
     <h2>Seus dados</h2>
     <div class="card">
@@ -322,7 +323,6 @@ function render() {
       </div>
     </div>`;
 
-  // Caso não haja ficha escolhida (ou já concluída): mostra dados fixos + seletor de ficha, sem lista de exercícios
   if (!st.letra || st.done.includes(st.letra)) {
     app.innerHTML = `
     <div class="container active">
@@ -401,7 +401,6 @@ function render() {
   });
 }
 
-// Liga os eventos que existem em toda tela (seletor de ficha + dados fixos + água)
 function bindCommon(p, st) {
   document.querySelectorAll('[data-letra]').forEach(b=>{
     b.addEventListener('click', ()=>{ st.letra = b.dataset.letra; st.checks = []; saveState(p); render(); });
@@ -425,8 +424,9 @@ function bindCommon(p, st) {
 function calcKcal(weight, hours) {
   const w = parseFloat(weight); const h = parseFloat(hours);
   if (!w || !h) return 0;
-  return Math.round(6 * w * h); // MET ~6 para musculação
+  return Math.round(6 * w * h);
 }
+
 function updateKcalPreview() {
   const st = state[current];
   const el = document.getElementById('kcal-preview');

@@ -56,9 +56,11 @@
     top: 0;
     z-index: 10;
     background: #000;
+    overflow-x: auto;
   }
   .tab {
     flex: 1;
+    min-width: 90px;
     padding: 16px 8px;
     text-align: center;
     cursor: pointer;
@@ -83,7 +85,7 @@
   }
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 13px; margin-bottom: 5px; opacity: .85; }
-  .field input {
+  .field input, .field select {
     width: 100%;
     padding: 10px;
     border-radius: 8px;
@@ -92,7 +94,21 @@
     color: #fff;
     font-size: 14px;
   }
+  .field select option { background: #1a102a; color: #fff; }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .metrics-box {
+    background: rgba(255,255,255,.04);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .metrics-box div { display: flex; justify-content: space-between; align-items: center; }
+  .metrics-box b { font-size: 15px; }
 
   .exercise {
     display: flex;
@@ -138,7 +154,7 @@
     margin-bottom: 10px;
   }
 
-  /* THEMES */
+  /* TEMAS DAS ABAS E NOMES */
   .theme-lucas .tabs .tab.active { border-color: #ffe600; color: #ffe600; }
   .theme-lucas .btn.primary { background: #ffe600; color: #000; }
   .theme-lucas .badge { background: #ffe600; color: #000; }
@@ -161,6 +177,18 @@
   .theme-angelica .exercise.done { color: #ff9ecb; }
   .theme-angelica .card { background: rgba(255,79,163,.08); border-color: rgba(255,79,163,.3); }
 
+  .theme-yasmin .tabs .tab.active { border-color: #00e5ff; color: #00e5ff; }
+  .theme-yasmin .btn.primary { background: #00e5ff; color: #000; }
+  .theme-yasmin .badge { background: #00e5ff; color: #000; }
+  .theme-yasmin .exercise.done { color: #80f2ff; }
+  .theme-yasmin .card { background: rgba(0,229,255,.08); border-color: rgba(0,229,255,.3); }
+
+  .theme-kaua .tabs .tab.active { border-color: #ff6b00; color: #ff6b00; }
+  .theme-kaua .btn.primary { background: #ff6b00; color: #fff; }
+  .theme-kaua .badge { background: #ff6b00; color: #fff; }
+  .theme-kaua .exercise.done { color: #ffaa66; }
+  .theme-kaua .card { background: rgba(255,107,0,.08); border-color: rgba(255,107,0,.3); }
+
   .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,.3); color: #fff; }
 
   .water-bar-bg {
@@ -180,6 +208,9 @@
   .theme-lucas .water-bar-fill { background: #ffe600; }
   .theme-nathan .water-bar-fill { background: #a259ff; }
   .theme-angelica .water-bar-fill { background: #ff4fa3; }
+  .theme-yasmin .water-bar-fill { background: #00e5ff; }
+  .theme-kaua .water-bar-fill { background: #ff6b00; }
+
   .water-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 4px; }
   .water-buttons { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .water-buttons .btn { flex: 1; min-width: 70px; margin-top: 0; padding: 10px 4px; font-size: 13px; }
@@ -193,6 +224,8 @@
     <button class="home-btn" data-person="lucas">Lucas Cruz</button>
     <button class="home-btn" data-person="angelica">Angelica</button>
     <button class="home-btn" data-person="nathan">Nathan</button>
+    <button class="home-btn" data-person="yasmin">Yasmin</button>
+    <button class="home-btn" data-person="kaua">Kauã</button>
   </div>
 </div>
 
@@ -200,6 +233,8 @@
   <div class="tab" data-person="lucas">Lucas Cruz</div>
   <div class="tab" data-person="angelica">Angelica</div>
   <div class="tab" data-person="nathan">Nathan</div>
+  <div class="tab" data-person="yasmin">Yasmin</div>
+  <div class="tab" data-person="kaua">Kauã</div>
 </div>
 
 <div id="app"></div>
@@ -252,24 +287,28 @@ const FICHAS = {
 };
 FICHAS.lucas = FICHAS.padrao;
 FICHAS.angelica = FICHAS.padrao;
+FICHAS.yasmin = FICHAS.padrao;
+FICHAS.kaua = FICHAS.padrao;
 
-const PEOPLE = ['lucas','angelica','nathan'];
+const PEOPLE = ['lucas','angelica','nathan','yasmin','kaua'];
 let current = 'lucas';
 let state = {};
 
 async function loadState(p) {
   try {
     const raw = localStorage.getItem('ficha_estado_' + p);
-    const st = raw ? JSON.parse(raw) : { done: [], letra: null, weight:'', height:'', measure:'', goal:'', hours:'', checks:[] };
+    const st = raw ? JSON.parse(raw) : { done: [], letra: null, weight:'', height:'', goal:'', age: 25, gender: 'm', hours:'', checks:[] };
     if (!st.done) st.done = [];
     if (st.letra === undefined) st.letra = null;
     if (st.hours === undefined) st.hours = '';
+    if (st.age === undefined) st.age = 25;
+    if (st.gender === undefined) st.gender = (p === 'angelica' || p === 'yasmin') ? 'f' : 'm';
     if (!st.water) st.water = { goal: 2000, current: 0, date: '' };
     const today = new Date().toISOString().slice(0,10);
     if (st.water.date !== today) { st.water.current = 0; st.water.date = today; }
     return st;
   } catch(e) { 
-    return { done: [], letra: null, weight:'', height:'', measure:'', goal:'', hours:'', checks:[], water:{goal:2000,current:0,date:new Date().toISOString().slice(0,10)} }; 
+    return { done: [], letra: null, weight:'', height:'', goal:'', age: 25, gender: 'm', hours:'', checks:[], water:{goal:2000,current:0,date:new Date().toISOString().slice(0,10)} }; 
   }
 }
 
@@ -277,12 +316,64 @@ async function saveState(p) {
   try { localStorage.setItem('ficha_estado_' + p, JSON.stringify(state[p])); } catch(e) {}
 }
 
+// Converte entrada de texto (Ex: "1:15", "1h12", "0:45") para horas em decimal
+function parseTimeToHours(str) {
+  if (!str) return 0;
+  str = String(str).trim().toLowerCase().replace('h', ':').replace('m', '');
+  if (str.includes(':')) {
+    const parts = str.split(':');
+    const h = parseFloat(parts[0]) || 0;
+    const m = parseFloat(parts[1]) || 0;
+    return h + (m / 60);
+  }
+  const val = parseFloat(str);
+  return isNaN(val) ? 0 : val;
+}
+
+// Cálculo do IMC
+function calcIMC(weight, height) {
+  const w = parseFloat(weight);
+  const h = parseFloat(height) / 100;
+  if (!w || !h || h <= 0) return { imc: 0, status: '-' };
+  const imc = w / (h * h);
+  let status = '';
+  if (imc < 18.5) status = 'Abaixo do peso';
+  else if (imc < 24.9) status = 'Peso normal';
+  else if (imc < 29.9) status = 'Sobrepeso';
+  else status = 'Obesidade';
+  return { imc: imc.toFixed(1), status };
+}
+
+// Cálculo de Calorias Diárias Necessárias (Mifflin-St Jeor)
+function calcDailyKcal(weight, height, age, gender) {
+  const w = parseFloat(weight);
+  const h = parseFloat(height);
+  const a = parseInt(age) || 25;
+  if (!w || !h) return 0;
+
+  let tmb = (10 * w) + (6.25 * h) - (5 * a);
+  tmb += (gender === 'f') ? -161 : 5;
+  return Math.round(tmb * 1.55);
+}
+
+// Gasto do Treino
+function calcTreinoKcal(weight, hoursStr) {
+  const w = parseFloat(weight);
+  const h = parseTimeToHours(hoursStr);
+  if (!w || !h) return 0;
+  return Math.round(6 * w * h);
+}
+
 function render() {
   const app = document.getElementById('app');
   const p = current;
   const st = state[p];
   const order = FICHAS[p].order;
-  const nomes = { lucas:'Lucas Cruz', angelica:'Angelica', nathan:'Nathan' };
+  const nomes = { lucas:'Lucas Cruz', angelica:'Angelica', nathan:'Nathan', yasmin:'Yasmin', kaua:'Kauã' };
+
+  const imcData = calcIMC(st.weight, st.height);
+  const dailyKcal = calcDailyKcal(st.weight, st.height, st.age, st.gender);
+  const treinoKcal = calcTreinoKcal(st.weight, st.hours);
 
   const letraSelectorHtml = `
     <h2>Ficha de hoje</h2>
@@ -295,16 +386,23 @@ function render() {
     </div>`;
 
   const dadosFixosHtml = `
-    <h2>Seus dados</h2>
+    <h2>Seus dados & Métricas</h2>
     <div class="card">
       <div class="grid2">
         <div class="field"><label>Peso (kg)</label><input type="number" id="in-weight" value="${st.weight}"></div>
         <div class="field"><label>Altura (cm)</label><input type="number" id="in-height" value="${st.height}"></div>
-        <div class="field"><label>Medida (cintura, cm)</label><input type="number" id="in-measure" value="${st.measure}"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Idade (anos)</label><input type="number" id="in-age" value="${st.age}"></div>
         <div class="field"><label>Objetivo de peso (kg)</label><input type="number" id="in-goal" value="${st.goal}"></div>
       </div>
-      <div class="field"><label>Horas treinadas hoje</label><input type="number" step="0.1" id="in-hours" value="${st.hours||''}"></div>
-      <div class="row" style="font-size:14px; opacity:.85;">Calorias estimadas: <b id="kcal-preview">${calcKcal(st.weight, st.hours)}</b> kcal</div>
+      <div class="field"><label>Tempo de treino hoje (ex: 1:12, 1:15, 0:45)</label><input type="text" id="in-hours" value="${st.hours||''}" placeholder="Ex: 1:15"></div>
+      
+      <div class="metrics-box">
+        <div><span>Seu IMC:</span> <b>${imcData.imc ? imcData.imc + ' (' + imcData.status + ')' : '-'}</b></div>
+        <div><span>Gasto diário recomendado:</span> <b>${dailyKcal ? dailyKcal + ' kcal/dia' : '-'}</b></div>
+        <div><span>Queima do treino hoje:</span> <b>${treinoKcal ? treinoKcal + ' kcal' : '0 kcal'}</b></div>
+      </div>
     </div>
 
     <h2>Água</h2>
@@ -365,7 +463,7 @@ function render() {
     <div class="print-area" id="print-area" style="display:none;">
       <span class="badge">TREINO CONCLUÍDO</span>
       <div class="row">Tempo total treino: <b id="p-tempo"></b></div>
-      <div class="row">Calorias gastas: <b id="p-kcal"></b></div>
+      <div class="row">Calorias gastas no treino: <b id="p-kcal"></b></div>
       <div class="row">Ficha escolhida: <b id="p-ficha"></b></div>
       <div class="row">Água consumida: <b id="p-water"></b></div>
     </div>
@@ -383,8 +481,8 @@ function render() {
   });
 
   document.getElementById('btn-concluir').addEventListener('click', async ()=>{
-    const kcal = calcKcal(st.weight, st.hours);
-    const tempo = st.hours ? st.hours + 'h' : '-';
+    const kcal = calcTreinoKcal(st.weight, st.hours);
+    const tempo = st.hours ? st.hours : '-';
     document.getElementById('p-tempo').textContent = tempo;
     document.getElementById('p-kcal').textContent = kcal + ' kcal';
     document.getElementById('p-ficha').textContent = 'Ficha ' + letra + ' — ' + ficha.titulo;
@@ -405,11 +503,11 @@ function bindCommon(p, st) {
   document.querySelectorAll('[data-letra]').forEach(b=>{
     b.addEventListener('click', ()=>{ st.letra = b.dataset.letra; st.checks = []; saveState(p); render(); });
   });
-  document.getElementById('in-weight').addEventListener('input', e=>{ st.weight=e.target.value; saveState(p); updateKcalPreview(); });
-  document.getElementById('in-height').addEventListener('input', e=>{ st.height=e.target.value; saveState(p); });
-  document.getElementById('in-measure').addEventListener('input', e=>{ st.measure=e.target.value; saveState(p); });
+  document.getElementById('in-weight').addEventListener('input', e=>{ st.weight=e.target.value; saveState(p); render(); });
+  document.getElementById('in-height').addEventListener('input', e=>{ st.height=e.target.value; saveState(p); render(); });
+  document.getElementById('in-age').addEventListener('input', e=>{ st.age=e.target.value; saveState(p); render(); });
   document.getElementById('in-goal').addEventListener('input', e=>{ st.goal=e.target.value; saveState(p); });
-  document.getElementById('in-hours').addEventListener('input', e=>{ st.hours=e.target.value; saveState(p); updateKcalPreview(); });
+  document.getElementById('in-hours').addEventListener('input', e=>{ st.hours=e.target.value; saveState(p); render(); });
   document.getElementById('in-water-goal').addEventListener('input', e=>{ st.water.goal = parseInt(e.target.value)||1; saveState(p); render(); });
   document.querySelectorAll('.water-buttons [data-add]').forEach(b=>{
     b.addEventListener('click', ()=>{
@@ -419,18 +517,6 @@ function bindCommon(p, st) {
       render();
     });
   });
-}
-
-function calcKcal(weight, hours) {
-  const w = parseFloat(weight); const h = parseFloat(hours);
-  if (!w || !h) return 0;
-  return Math.round(6 * w * h);
-}
-
-function updateKcalPreview() {
-  const st = state[current];
-  const el = document.getElementById('kcal-preview');
-  if (el) el.textContent = calcKcal(st.weight, st.hours);
 }
 
 async function selectPerson(p) {

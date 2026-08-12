@@ -110,19 +110,34 @@
   .metrics-box div { display: flex; justify-content: space-between; align-items: center; }
   .metrics-box b { font-size: 15px; }
 
+  /* ESTILOS DOS EXERCÍCIOS E IMAGENS DA ANATOMIA */
+  .exercise-item {
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    padding: 12px 4px;
+  }
+  .exercise-item:last-child { border-bottom: none; }
   .exercise {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 4px;
-    border-bottom: 1px solid rgba(255,255,255,.1);
     font-size: 14px;
   }
-  .exercise:last-child { border-bottom: none; }
   .exercise input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; cursor: pointer; }
-  .exercise .name { flex: 1; }
+  .exercise .name { flex: 1; font-weight: 600; }
   .exercise .sets { opacity: .7; font-size: 13px; white-space: nowrap; }
-  .exercise.done .name { text-decoration: line-through; opacity: .5; }
+  .exercise-item.done .name { text-decoration: line-through; opacity: .5; }
+
+  /* Diagrama anatômico do grupo muscular */
+  .exercise-img {
+    width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    background: #ffffff;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding: 6px;
+    display: block;
+  }
 
   .btn {
     width: 100%;
@@ -158,7 +173,7 @@
   .theme-lucas .tabs .tab.active { border-color: #ffe600; color: #ffe600; }
   .theme-lucas .btn.primary { background: #ffe600; color: #000; }
   .theme-lucas .badge { background: #ffe600; color: #000; }
-  .theme-lucas .exercise.done { color: #ffe600; }
+  .theme-lucas .exercise-item.done { color: #ffe600; }
 
   .theme-nathan .tabs .tab.active,
   .tabs .tab.active { border-color: #a259ff; color: #a259ff; }
@@ -166,27 +181,27 @@
   .btn.primary { background: #a259ff; color: #fff; }
   .theme-nathan .badge,
   .badge { background: #a259ff; color: #fff; }
-  .theme-nathan .exercise.done,
-  .exercise.done { color: #cba3ff; }
+  .theme-nathan .exercise-item.done,
+  .exercise-item.done { color: #cba3ff; }
   .theme-nathan .card,
   .card { background: rgba(162,89,255,.08); border-color: rgba(162,89,255,.3); }
 
   .theme-angelica .tabs .tab.active { border-color: #ff4fa3; color: #ff4fa3; }
   .theme-angelica .btn.primary { background: #ff4fa3; color: #fff; }
   .theme-angelica .badge { background: #ff4fa3; color: #fff; }
-  .theme-angelica .exercise.done { color: #ff9ecb; }
+  .theme-angelica .exercise-item.done { color: #ff9ecb; }
   .theme-angelica .card { background: rgba(255,79,163,.08); border-color: rgba(255,79,163,.3); }
 
   .theme-yasmin .tabs .tab.active { border-color: #00e5ff; color: #00e5ff; }
   .theme-yasmin .btn.primary { background: #00e5ff; color: #000; }
   .theme-yasmin .badge { background: #00e5ff; color: #000; }
-  .theme-yasmin .exercise.done { color: #80f2ff; }
+  .theme-yasmin .exercise-item.done { color: #80f2ff; }
   .theme-yasmin .card { background: rgba(0,229,255,.08); border-color: rgba(0,229,255,.3); }
 
   .theme-kaua .tabs .tab.active { border-color: #ff6b00; color: #ff6b00; }
   .theme-kaua .btn.primary { background: #ff6b00; color: #fff; }
   .theme-kaua .badge { background: #ff6b00; color: #fff; }
-  .theme-kaua .exercise.done { color: #ffaa66; }
+  .theme-kaua .exercise-item.done { color: #ffaa66; }
   .theme-kaua .card { background: rgba(255,107,0,.08); border-color: rgba(255,107,0,.3); }
 
   .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,.3); color: #fff; }
@@ -240,6 +255,34 @@
 <div id="app"></div>
 
 <script>
+// Imagens públicas (Wikimedia / Domínio Público) dos grupos musculares
+const MUSCLE_IMAGES = {
+  peito: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Pectoralis_major.png/320px-Pectoralis_major.png',
+  triceps: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Triceps_brachii.png/320px-Triceps_brachii.png',
+  biceps: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Biceps_brachii.png/320px-Biceps_brachii.png',
+  costas: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Latissimus_dorsi.png/320px-Latissimus_dorsi.png',
+  ombros: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Deltoideus.png/320px-Deltoideus.png',
+  quadriceps: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Quadriceps.png/320px-Quadriceps.png',
+  posterior: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Hamstring.png/320px-Hamstring.png',
+  panturrilha: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Gastrocnemius.png/320px-Gastrocnemius.png',
+  gluteo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Gluteus_maximus.png/320px-Gluteus_maximus.png'
+};
+
+// Função para selecionar automaticamente a imagem muscular ideal baseada no nome do exercício
+function getMuscleImg(nomeEx) {
+  const ex = nomeEx.toLowerCase();
+  if (ex.includes('supino') || ex.includes('peck') || ex.includes('crossover') || ex.includes('crucifixo máquina')) return MUSCLE_IMAGES.peito;
+  if (ex.includes('tríceps') || ex.includes('triceps')) return MUSCLE_IMAGES.triceps;
+  if (ex.includes('rosca')) return MUSCLE_IMAGES.biceps;
+  if (ex.includes('puxada') || ex.includes('remada') || ex.includes('pulldown') || ex.includes('pullover')) return MUSCLE_IMAGES.costas;
+  if (ex.includes('desenvolvimento') || ex.includes('elevação') || ex.includes('crucifixo inverso')) return MUSCLE_IMAGES.ombros;
+  if (ex.includes('extensora') || ex.includes('leg press') || ex.includes('hack') || ex.includes('agachamento')) return MUSCLE_IMAGES.quadriceps;
+  if (ex.includes('flexora')) return MUSCLE_IMAGES.posterior;
+  if (ex.includes('panturrilha')) return MUSCLE_IMAGES.panturrilha;
+  if (ex.includes('glúteo') || ex.includes('gluteo') || ex.includes('abdutora')) return MUSCLE_IMAGES.gluteo;
+  return MUSCLE_IMAGES.peito;
+}
+
 const FICHAS = {
   nathan: {
     order: ['A','B','C','D','E'],
@@ -316,7 +359,6 @@ async function saveState(p) {
   try { localStorage.setItem('ficha_estado_' + p, JSON.stringify(state[p])); } catch(e) {}
 }
 
-// Converte entrada de texto (Ex: "1:15", "1h12", "0:45") para horas em decimal
 function parseTimeToHours(str) {
   if (!str) return 0;
   str = String(str).trim().toLowerCase().replace('h', ':').replace('m', '');
@@ -330,7 +372,6 @@ function parseTimeToHours(str) {
   return isNaN(val) ? 0 : val;
 }
 
-// Cálculo do IMC
 function calcIMC(weight, height) {
   const w = parseFloat(weight);
   const h = parseFloat(height) / 100;
@@ -344,7 +385,6 @@ function calcIMC(weight, height) {
   return { imc: imc.toFixed(1), status };
 }
 
-// Cálculo de Calorias Diárias Necessárias (Mifflin-St Jeor)
 function calcDailyKcal(weight, height, age, gender) {
   const w = parseFloat(weight);
   const h = parseFloat(height);
@@ -356,7 +396,6 @@ function calcDailyKcal(weight, height, age, gender) {
   return Math.round(tmb * 1.55);
 }
 
-// Gasto do Treino
 function calcTreinoKcal(weight, hoursStr) {
   const w = parseFloat(weight);
   const h = parseTimeToHours(hoursStr);
@@ -448,12 +487,22 @@ function render() {
 
     <h2>Ficha ${letra} — ${ficha.titulo}</h2>
     <div class="card">
-      ${ficha.ex.map((e,i)=>`
-        <div class="exercise ${st.checks[i]?'done':''}">
-          <input type="checkbox" data-idx="${i}" ${st.checks[i]?'checked':''}>
-          <div class="name">${i+1}. ${e[0]}</div>
-          <div class="sets">${e[1]}</div>
-        </div>`).join('')}
+      ${ficha.ex.map((e,i)=>{
+        const nome = e[0];
+        const series = e[1];
+        const imgUrl = getMuscleImg(nome);
+        const isChecked = st.checks[i];
+
+        return `
+        <div class="exercise-item ${isChecked?'done':''}">
+          <div class="exercise">
+            <input type="checkbox" data-idx="${i}" ${isChecked?'checked':''}>
+            <div class="name">${i+1}. ${nome}</div>
+            <div class="sets">${series}</div>
+          </div>
+          <img class="exercise-img" src="${imgUrl}" alt="Anatomia - ${nome}">
+        </div>`;
+      }).join('')}
     </div>
 
     <button class="btn primary" id="btn-concluir" ${!completo?'disabled':''}>
